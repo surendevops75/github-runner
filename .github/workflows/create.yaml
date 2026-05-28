@@ -1,0 +1,403 @@
+# GitHub Actions Terraform AWS Runner Deployment
+
+This workflow demonstrates how to provision infrastructure automatically using GitHub Actions and Terraform.
+
+The workflow creates AWS infrastructure by:
+
+* Checking out repository code
+* Installing Terraform
+* Configuring AWS credentials
+* Initializing Terraform
+* Creating an execution plan
+* Applying infrastructure changes automatically
+
+This type of workflow is commonly used in DevOps automation for:
+
+* Provisioning EC2 instances
+* Creating Kubernetes clusters
+* Deploying cloud infrastructure
+* Managing Infrastructure as Code (IaC)
+
+The workflow is manually triggered using `workflow_dispatch`, which allows engineers to control when infrastructure creation happens.
+
+---
+
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: create runner
+
+# Manual workflow trigger
+on: workflow_dispatch
+
+jobs:
+
+  # Job name
+  create-runner:
+
+    # Runner machine where workflow executes
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # --------------------------------------------------------
+      # CHECKOUT SOURCE CODE
+      # --------------------------------------------------------
+
+      # Downloads repository code into runner machine
+      - name: checkout code
+        uses: actions/checkout@v6
+
+      # --------------------------------------------------------
+      # LIST REPOSITORY FILES
+      # --------------------------------------------------------
+
+      # Display files available inside runner
+      # Useful for debugging
+      - name: list files
+        run: ls -l
+
+      # --------------------------------------------------------
+      # INSTALL TERRAFORM
+      # --------------------------------------------------------
+
+      # Installs latest Terraform version
+      # into GitHub runner machine
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # --------------------------------------------------------
+      # CONFIGURE AWS CREDENTIALS
+      # --------------------------------------------------------
+
+      # Authenticates GitHub Actions with AWS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.1
+
+        with:
+
+          # AWS region
+          aws-region: us-east-1
+
+          # AWS Access Key stored in GitHub Secrets
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+
+          # AWS Secret Key stored securely in GitHub Secrets
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # --------------------------------------------------------
+      # TERRAFORM INITIALIZATION
+      # --------------------------------------------------------
+
+      # Downloads providers and initializes Terraform
+      - name: terraform init
+        run: terraform init
+
+      # --------------------------------------------------------
+      # TERRAFORM PLAN
+      # --------------------------------------------------------
+
+      # Shows infrastructure execution plan
+      - name: terraform plan
+        run: terraform plan
+
+      # --------------------------------------------------------
+      # TERRAFORM APPLY
+      # --------------------------------------------------------
+
+      # Creates infrastructure automatically
+      # -auto-approve skips manual confirmation
+      - name: terraform approve
+        run: terraform apply -auto-approve
+```
+
+---
+
+# Important Concepts
+
+# workflow_dispatch
+
+on: workflow_dispatch
+```
+
+Allows manual workflow execution from GitHub Actions UI.
+
+Used for:
+
+* Infrastructure provisioning
+* Production deployments
+* Controlled releases
+* Manual approvals
+
+---
+
+# actions/checkout
+
+uses: actions/checkout@v6
+```
+
+Downloads repository source code into runner machine.
+
+Without this step:
+
+* Terraform files will not exist inside runner
+* Workflow cannot access repository content
+
+---
+
+# setup-terraform
+
+uses: hashicorp/setup-terraform@v3
+```
+
+Installs Terraform automatically inside GitHub runner.
+
+Without this:
+
+terraform command not found
+```
+
+error occurs.
+
+---
+
+# AWS Credentials Configuration
+
+aws-actions/configure-aws-credentials
+```
+
+Authenticates workflow with AWS.
+
+This action:
+
+* Creates temporary AWS session
+* Exports credentials securely
+* Allows Terraform to access AWS APIs
+
+---
+
+# GitHub Secrets
+
+${{ secrets.AWS_ACCESS_KEY_ID }}
+```
+
+Secrets are encrypted variables stored securely in GitHub.
+
+Used for:
+
+* AWS credentials
+* API keys
+* Tokens
+* Passwords
+
+Benefits:
+
+* Prevents exposing credentials in code
+* Secure CI/CD authentication
+
+---
+
+# terraform init
+
+terraform init
+```
+
+Initializes Terraform working directory.
+
+Downloads:
+
+* Providers
+* Modules
+* Backend plugins
+
+Must run before:
+
+terraform plan
+terraform apply
+```
+
+---
+
+# terraform plan
+
+terraform plan
+```
+
+Shows:
+
+* Resources to create
+* Resources to modify
+* Resources to destroy
+
+Used for validation before deployment.
+
+Example:
+
++ create aws_instance
+```
+
+---
+
+# terraform apply
+
+
+terraform apply -auto-approve
+```
+
+Applies infrastructure changes.
+
+Creates:
+
+* EC2 instances
+* Security groups
+* Networking resources
+* Cloud infrastructure
+
+---
+
+# -auto-approve
+
+
+-auto-approve
+```
+
+Skips manual confirmation prompt.
+
+Without this:
+Terraform waits for:
+
+yes
+```
+
+input.
+
+Used in automation pipelines.
+
+---
+
+# Workflow Execution Flow
+
+Manual Workflow Trigger
+         ↓
+GitHub Runner Starts
+         ↓
+Repository Checkout
+         ↓
+Terraform Installation
+         ↓
+AWS Authentication
+         ↓
+Terraform Initialization
+         ↓
+Terraform Plan Generation
+         ↓
+Terraform Apply Execution
+         ↓
+AWS Infrastructure Created
+```
+
+---
+
+# Real DevOps Use Cases
+
+## Infrastructure Provisioning
+
+Used for:
+
+* EC2 instances
+* VPC creation
+* Kubernetes clusters
+* RDS databases
+
+---
+
+## CI/CD Infrastructure Automation
+
+Automatically create:
+
+* Build runners
+* Deployment servers
+* Test environments
+* Temporary environments
+
+---
+
+## GitOps Workflows
+
+Used in:
+
+* Infrastructure as Code pipelines
+* Automated cloud deployments
+* Multi-environment provisioning
+
+---
+
+# Why GitHub Secrets Are Important
+
+Never hardcode credentials like:
+
+aws-secret-access-key: ABC123
+```
+
+This is insecure.
+
+Use:
+
+${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
+
+instead.
+
+Benefits:
+
+* Secure storage
+* Encrypted secrets
+* Safe CI/CD automation
+
+---
+
+# Production Best Practices
+
+Instead of long-term AWS keys:
+
+* Use IAM Roles
+* Use OpenID Connect (OIDC)
+
+Benefits:
+
+* More secure
+* No static credentials
+* Better access control
+
+---
+
+# Why This Workflow Is Important
+
+This workflow demonstrates complete Infrastructure as Code automation using:
+
+* GitHub Actions
+* Terraform
+* Amazon Web Services
+
+It combines:
+
+* CI/CD automation
+* Cloud provisioning
+* Secure authentication
+* Infrastructure deployment
+
+These are core DevOps concepts used in real production environments.
+
+---
+
+# How to Run
+
+1. Store AWS credentials in GitHub Secrets
+2. Push Terraform code to repository
+3. Open Actions tab
+4. Select `create runner`
+5. Click `Run workflow`
+6. Observe Terraform execution logs
+7. Verify infrastructure creation in AWS Console
+
+---
